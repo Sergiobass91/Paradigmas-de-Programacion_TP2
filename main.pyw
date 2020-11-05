@@ -1,5 +1,9 @@
+from mejorDisparo import mejorDisparo
+from promedio import promedioDisparos
+
 from tkinter import Tk, Frame, Label, Radiobutton, Button, Entry, StringVar, IntVar, messagebox
 import openpyxl
+
 
 def clearData():
     entryNombre.delete(0, 'end')
@@ -9,44 +13,45 @@ def clearData():
     entryDisparo2.delete(0, 'end')
     entryDisparo3.delete(0, 'end')
 
-def guardaDatos():
-    listaCarga = [entryNombre.get(),entryApellido.get(),entryEdad.get(),sexo,entryDisparo1.get(),entryDisparo2.get(),entryDisparo3.get()]
-    with open ('participantes.txt', 'a', encoding='UTF-8', newline='\n') as file:
+def defineSexo():
+    define = 'M' if sexo.get() == 1 else 'F'
+    return define
+
+
+def cargaTxt():
+    
+    tuplaDisparos = (int(entryDisparo1.get()), int(entryDisparo2.get()), int(entryDisparo3.get()))
+    
+    mejorDisp = mejorDisparo(tuplaDisparos)
+    promedioDisp = promedioDisparos(tuplaDisparos)
+    sexoStr = defineSexo()
+
+    listaCarga = [entryNombre.get(),entryApellido.get(),entryEdad.get(),sexoStr,entryDisparo1.get(),entryDisparo2.get(),entryDisparo3.get(),mejorDisp,promedioDisp]
+
+    with open ('participantes.txt', 'a', encoding='UTF-8') as file:
+        print(listaCarga)
         file.writelines(listaCarga)
-        file.write("\n")
+        # file.write("\n")
+
+    #with open('cargaParticipantes.xlsx', 'a',) as excelFile:
+
 
     clearData()
 
 
-def defineSexo():
-    define = 'M' if sexo.get() == 1 else 'F'
-    messagebox.showinfo(message=define)
-    return define
-
-
-
 def cargaXls():
 
-    listFieldNames = ['Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3']
+    listFieldNames = ['Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3','Mejor Disparo', 'Promedio Disparo']
     book = openpyxl.Workbook()
     sheet= book.active
-    # sheet['A1'] = 'Nombre'
-    # sheet['B1'] = 'Apellido'
-    # sheet['C1'] = 'Edad'
-    # sheet['D1'] = 'Sexo'
-    # sheet['E1'] = 'Disparo 1'
-    # sheet['F1'] = 'Disparo 2'
-    # sheet['G1'] = 'Disparo 3'
-    sheet.cell(row=3, column=2, value='PRUEBA')
-    for i in range(len(listFieldNames)):
-        for name in listFieldNames:
-            print(name) #DEBUG
-            sheet.cell(row=1, column=i+1, value=name)
-        
 
+    for i in range(len(listFieldNames)):
+        sheet.cell(row=1, column= i+1, value=listFieldNames[i])
+    
     book.save(filename='cargaParticipantesExcel.xlsx')
 
-
+def ganador():
+    pass
 
 
 
@@ -93,7 +98,7 @@ if __name__ == "__main__":
     entryDisparo3.grid(row='6',column='1', padx='10')
 
     #Agrega botones de opciones
-    botonSave = Button(frame, text='Guardar', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command= guardaDatos)
+    botonSave = Button(frame, text='Guardar', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command= cargaTxt)
     botonSave.grid(row='7',column='0', sticky='w', padx='10', pady='15')
 
     botonWinner = Button(frame, text='Ganador', bg='#147E99', fg='#FFFFFF', font=('Calibri',12))
@@ -101,7 +106,5 @@ if __name__ == "__main__":
 
     botonExport = Button(frame, text='Exportar xls', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command=cargaXls)
     botonExport.grid(row='7',column='2', sticky='w', padx='10', pady='15')
-
-
 
 root.mainloop()
