@@ -1,8 +1,9 @@
 from mejorDisparo import mejorDisparo
 from promedio import promedioDisparos
-
 from tkinter import Tk, Frame, Label, Radiobutton, Button, Entry, StringVar, IntVar, messagebox
+import random
 import openpyxl
+import csv
 
 
 def clearData():
@@ -18,42 +19,50 @@ def defineSexo():
     return define
 
 
-def cargaTxt():
-    
+def guardaDatos():
+
     tuplaDisparos = (int(entryDisparo1.get()), int(entryDisparo2.get()), int(entryDisparo3.get()))
-    
     mejorDisp = mejorDisparo(tuplaDisparos)
     promedioDisp = promedioDisparos(tuplaDisparos)
-    sexoStr = defineSexo()
+    listaParticipantes = []
+    datosParticipante = dict()
 
-    listaCarga = [entryNombre.get(),entryApellido.get(),entryEdad.get(),sexoStr,entryDisparo1.get(),entryDisparo2.get(),entryDisparo3.get(),mejorDisp,promedioDisp]
+    datosParticipante['numeroId'] = random.randrange(0,1000)
+    datosParticipante['Nombre'] = entryNombre.get()
+    datosParticipante['Apellido'] = entryApellido.get()
+    datosParticipante['edad'] = entryEdad.get()
+    datosParticipante['sexo'] = defineSexo()
+    datosParticipante['Disparo1'] = entryDisparo1.get()
+    datosParticipante['Disparo2'] = entryDisparo2.get()
+    datosParticipante['Disparo3'] = entryDisparo3.get()
+    datosParticipante['MejorDisparo'] = mejorDisp
+    datosParticipante['promedioDisparo'] = promedioDisp
 
-    with open ('participantes.txt', 'a', encoding='UTF-8') as file:
-        print(listaCarga)
-        file.writelines(listaCarga)
-        # file.write("\n")
+    listaParticipantes.append(datosParticipante)
+    print(listaParticipantes) #DEBUG
 
-    #with open('cargaParticipantes.xlsx', 'a',) as excelFile:
-
+    with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames= listaParticipantes[0].keys())
+        writer.writeheader()
+        writer.writerows(listaParticipantes)
 
     clearData()
 
 
 def cargaXls():
 
-    listFieldNames = ['Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3','Mejor Disparo', 'Promedio Disparo']
+    listFieldNames = ['ID Participante','Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3','Mejor Disparo', 'Promedio Disparo']
     book = openpyxl.Workbook()
     sheet= book.active
 
     for i in range(len(listFieldNames)):
         sheet.cell(row=1, column= i+1, value=listFieldNames[i])
-    
+
     book.save(filename='cargaParticipantesExcel.xlsx')
 
 def ganador():
     pass
-
-
+    
 
 
 if __name__ == "__main__":
@@ -98,10 +107,10 @@ if __name__ == "__main__":
     entryDisparo3.grid(row='6',column='1', padx='10')
 
     #Agrega botones de opciones
-    botonSave = Button(frame, text='Guardar', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command= cargaTxt)
+    botonSave = Button(frame, text='Guardar', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command= guardaDatos)
     botonSave.grid(row='7',column='0', sticky='w', padx='10', pady='15')
 
-    botonWinner = Button(frame, text='Ganador', bg='#147E99', fg='#FFFFFF', font=('Calibri',12))
+    botonWinner = Button(frame, text='Ganador', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command=ganador)
     botonWinner.grid(row='7',column='1', sticky='w', padx='10', pady='15')
 
     botonExport = Button(frame, text='Exportar xls', bg='#147E99', fg='#FFFFFF', font=('Calibri',12), command=cargaXls)
