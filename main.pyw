@@ -20,8 +20,7 @@ def defineSexo():
 
 
 def guardaDatos():
-
-    tuplaDisparos = (int(entryDisparo1.get()), int(entryDisparo2.get()), int(entryDisparo3.get()))
+    tuplaDisparos = (float(entryDisparo1.get()), float(entryDisparo2.get()), float(entryDisparo3.get()))
     mejorDisp = mejorDisparo(tuplaDisparos)
     promedioDisp = promedioDisparos(tuplaDisparos)
     listaParticipantes = []
@@ -39,30 +38,47 @@ def guardaDatos():
     datosParticipante['promedioDisparo'] = promedioDisp
 
     listaParticipantes.append(datosParticipante)
-    print(listaParticipantes) #DEBUG
+    
+    with open('tablaParticipantes.csv', 'r', newline='') as csvfile:
 
-    with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames= listaParticipantes[0].keys())
-        writer.writeheader()
-        writer.writerows(listaParticipantes)
+        #Verifica si el archivo posee filas con datos
+        reader = [row for row in csv.DictReader(csvfile)]
+        if len(reader) == 0:
+            csvfile.close()
+            #Seteea los Headers en la primera iteración
+            with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=listaParticipantes[0].keys())
+                writer.writeheader()
+                writer.writerows(listaParticipantes)
+        else:
+            csvfile.close()
+            #pasa la primera escritura, omite setear el header.
+            with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=listaParticipantes[0].keys())
+                writer.writerows(listaParticipantes)
 
     clearData()
+    return listaParticipantes
 
 
 def cargaXls():
+    pass
+    # listFieldNames = ['ID Participante','Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3','Mejor Disparo', 'Promedio Disparo']
+    # book = openpyxl.Workbook()
+    # sheet= book.active
 
-    listFieldNames = ['ID Participante','Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3','Mejor Disparo', 'Promedio Disparo']
-    book = openpyxl.Workbook()
-    sheet= book.active
+    # for i in range(len(listFieldNames)):
+    #     sheet.cell(row=1, column= i+1, value=listFieldNames[i])
 
-    for i in range(len(listFieldNames)):
-        sheet.cell(row=1, column= i+1, value=listFieldNames[i])
-
-    book.save(filename='cargaParticipantesExcel.xlsx')
+    # book.save(filename='cargaParticipantesExcel.xlsx')
 
 def ganador():
-    pass
-    
+
+    with open('tablaParticipantes.csv', 'r', newline='') as csvfile:
+        reader = [row for row in csv.DictReader(csvfile)]
+        ordenPromedio = sorted(reader, key= lambda k:k['promedioDisparo'])
+
+    messagebox.showinfo(title="GANADOR!", message=f"El ganador es: {ordenPromedio[0]['Nombre']} {ordenPromedio[0]['Apellido']}\nCon un promedio de {ordenPromedio[0]['promedioDisparo']}")
 
 
 if __name__ == "__main__":
@@ -75,7 +91,7 @@ if __name__ == "__main__":
     frame = Frame()
     frame.pack()
     frame.config(bg='#147E99', width='340', height='430', bd=6, relief='groove')
-    
+    sexo = IntVar()
     
     #Setea Textos y entradas
     Label(frame, text='Nombre', bg='#147E99', fg='#FFFFFF', font=('Calibri',14)).grid(row='0',column='0', sticky='w', padx='10', pady='10')
@@ -88,10 +104,11 @@ if __name__ == "__main__":
     Label(frame, text='Edad', bg='#147E99', fg='#FFFFFF', font=('Calibri',14)).grid(row='2',column='0', sticky='w', padx='10', pady='10')
     entryEdad = Entry(frame)
     entryEdad.grid(row='2',column='1', padx='10')
-    sexo = IntVar()
-    checkMasculino = Radiobutton(frame, text='Masculino',variable=sexo, value= 1, command=defineSexo, bg='#147E99', fg='#FFFFFF', font=('Calibri',14))
-    checkMasculino.grid(row='3',column='0') #, columnspan=2
-    checkFemenino = Radiobutton(frame, text='Femenino',variable=sexo, value= 2, command=defineSexo, bg='#147E99', fg='#FFFFFF', font=('Calibri',14))
+
+    
+    checkMasculino = Radiobutton(frame, text='Masculino',variable=sexo, value=1, command=defineSexo, bg='#147E99', fg='#FFFFFF', font=('Calibri',14))
+    checkMasculino.grid(row='3',column='0') #columnspan=2
+    checkFemenino = Radiobutton(frame, text='Femenino',variable=sexo, value=2, command=defineSexo, bg='#147E99', fg='#FFFFFF', font=('Calibri',14))
     checkFemenino.grid(row='3',column='1', padx='10')
 
     Label(frame, text='Disparo 1', bg='#147E99', fg='#FFFFFF', font=('Calibri',14)).grid(row='4',column='0', sticky='w', padx='10', pady='10')
