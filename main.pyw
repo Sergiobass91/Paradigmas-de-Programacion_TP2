@@ -1,3 +1,6 @@
+#TP2 Paradigmas de Progamación
+#Sergio Beltrán Galvis
+
 from mejorDisparo import mejorDisparo
 from promedio import promedioDisparos
 from tkinter import Tk, Frame, Label, Radiobutton, Button, Entry, StringVar, IntVar, messagebox
@@ -5,8 +8,7 @@ import random
 import openpyxl
 import csv
 
-
-def clearData():
+def borraDatos():
     entryNombre.delete(0, 'end')
     entryApellido.delete(0, 'end')
     entryEdad.delete(0, 'end')
@@ -20,58 +22,64 @@ def defineSexo():
 
 
 def guardaDatos():
-    tuplaDisparos = (float(entryDisparo1.get()), float(entryDisparo2.get()), float(entryDisparo3.get()))
-    mejorDisp = mejorDisparo(tuplaDisparos)
-    promedioDisp = promedioDisparos(tuplaDisparos)
-    listaParticipantes = []
-    datosParticipante = dict()
+    try:
+        tuplaDisparos = (float(entryDisparo1.get()), float(entryDisparo2.get()), float(entryDisparo3.get()))
+        mejorDisp = mejorDisparo(tuplaDisparos)
+        promedioDisp = promedioDisparos(tuplaDisparos)
+        listaParticipantes = []
+        datosParticipante = dict()
 
-    datosParticipante['numeroId'] = random.randrange(0,1000)
-    datosParticipante['Nombre'] = entryNombre.get()
-    datosParticipante['Apellido'] = entryApellido.get()
-    datosParticipante['edad'] = entryEdad.get()
-    datosParticipante['sexo'] = defineSexo()
-    datosParticipante['Disparo1'] = entryDisparo1.get()
-    datosParticipante['Disparo2'] = entryDisparo2.get()
-    datosParticipante['Disparo3'] = entryDisparo3.get()
-    datosParticipante['MejorDisparo'] = mejorDisp
-    datosParticipante['promedioDisparo'] = promedioDisp
+        datosParticipante['numeroId'] = random.randrange(0,1000)
+        datosParticipante['Nombre'] = entryNombre.get()
+        datosParticipante['Apellido'] = entryApellido.get()
+        datosParticipante['edad'] = entryEdad.get()
+        datosParticipante['sexo'] = defineSexo()
+        datosParticipante['Disparo1'] = entryDisparo1.get()
+        datosParticipante['Disparo2'] = entryDisparo2.get()
+        datosParticipante['Disparo3'] = entryDisparo3.get()
+        datosParticipante['MejorDisparo'] = mejorDisp
+        datosParticipante['promedioDisparo'] = promedioDisp
 
-    listaParticipantes.append(datosParticipante)
-    
-    with open('tablaParticipantes.csv', 'r', newline='') as csvfile:
+        listaParticipantes.append(datosParticipante)
+        
+        with open('tablaParticipantes.csv', 'r', newline='') as csvfile:
 
-        #Verifica si el archivo posee filas con datos
-        reader = [row for row in csv.DictReader(csvfile)]
-        if len(reader) == 0:
-            csvfile.close()
-            #Seteea los Headers en la primera iteración
-            with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=listaParticipantes[0].keys())
-                writer.writeheader()
-                writer.writerows(listaParticipantes)
-        else:
-            csvfile.close()
-            #pasa la primera escritura, omite setear el header.
-            with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=listaParticipantes[0].keys())
-                writer.writerows(listaParticipantes)
+            #Verifica si el archivo posee filas con datos
+            reader = [row for row in csv.DictReader(csvfile)]
+            if len(reader) == 0:
+                csvfile.close()
+                #Seteea los Headers en la primera iteración
+                with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
+                    writer = csv.DictWriter(csvfile, fieldnames=listaParticipantes[0].keys())
+                    writer.writeheader()
+                    writer.writerows(listaParticipantes)
+            else:
+                csvfile.close()
+                #pasa la primera escritura, omite setear el header.
+                with open('tablaParticipantes.csv', 'a', newline='') as csvfile:
+                    writer = csv.DictWriter(csvfile, fieldnames=listaParticipantes[0].keys())
+                    writer.writerows(listaParticipantes)
 
-    clearData()
+        messagebox.showinfo(title="DBA Message", message="Participante guardado en tabla de datos.")
+        borraDatos()
+    except:
+        messagebox.showwarning(title="Error en Datos", message="Debes completar todos los campos")
     return listaParticipantes
 
 
 def cargaXls():
-    pass
-    # listFieldNames = ['ID Participante','Nombre','Apellido','Edad','Disparo 1','Disparo 2','Disparo 3','Mejor Disparo', 'Promedio Disparo']
-    # book = openpyxl.Workbook()
-    # sheet= book.active
+    book = openpyxl.Workbook()
+    ws = book.active
 
-    # for i in range(len(listFieldNames)):
-    #     sheet.cell(row=1, column= i+1, value=listFieldNames[i])
-
-    # book.save(filename='cargaParticipantesExcel.xlsx')
-
+    f = open('tablaParticipantes.csv')
+    reader = csv.reader(f, delimiter=',')
+    for row in reader:
+        ws.append(row)
+    f.close()
+       
+    book.save(filename='cargaParticipantesExcel.xlsx')
+    messagebox.showinfo(title="EXCEL", message="Archivo generado con exito!")
+    
 def ganador():
 
     with open('tablaParticipantes.csv', 'r', newline='') as csvfile:
